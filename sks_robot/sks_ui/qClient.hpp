@@ -41,7 +41,7 @@ public:
     void set_robot_speed(double v_x,double v_y,double yaw);
 
 private:
-    const char *motion_topic_name = "/sks_speed_topic";
+    const char *motion_topic_name = "/cmd_vel";
     ros::NodeHandle *n;
     ros::Publisher sks_vel_pub;
     geometry_msgs::Twist msg;

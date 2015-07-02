@@ -16,7 +16,10 @@
 #include "cssl/cssl.c"
 //#include "cssl/info.h"
 #define VERSION "by Lain-Jinn Hwang\n"
+#include "math.h"
 
+double pre_v_l=0;
+double pre_v_r=0;
 //-------cssl variable-------//
 char *echo ="\r";
 cssl_t *serial=0;
@@ -24,7 +27,7 @@ cssl_t *serial=0;
 
 
 //-------ROS variable-------//
-const char *motion_topic_name = "/sks_speed_topic";
+const char *motion_topic_name = "/cmd_vel";
 
 
 //====================//
