@@ -1,5 +1,8 @@
 #include "func.h"
 #include <QDebug>
+#include <string.h>
+
+unsigned char histogram[256]={0};
 
 char switch_autoThreshold=1;
 QImage func_Gray(QImage Inimg){
@@ -13,12 +16,24 @@ QImage func_Gray(QImage Inimg){
     }
     return temp;
 }
+void countNum0to255(QImage Inimg){
+    unsigned char gray;
+    for(int h=0;h<Inimg.height();h++){
+        for(int w=0;w<Inimg.width();w++){
+            gray = (qRed(Inimg.pixel(w,h)) + qGreen(Inimg.pixel(w,h)) + qBlue(Inimg.pixel(w,h)))/3;
+            histogram[gray] = histogram[gray]+1;
+        }
+    }
+}
 
-int Qtsu(unsigned char histogram[256]){
+//int Qtsu(unsigned char histogram[256]){
+int Qtsu(QImage Inimg){
     if(switch_autoThreshold){
         std::cout<<"using Otsu's Thresholding"<<std::endl;
         switch_autoThreshold=0;
     }
+    memset(histogram,0,sizeof(histogram)/sizeof(histogram[0]));
+    countNum0to255(Inimg);
 
     float size = 640*480;
     // NOTE: Creation of histogram[256] not shown

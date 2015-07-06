@@ -9,7 +9,7 @@
 #include <opencv/cv.h>
 
 QImage func_Gray(QImage Inimg);
-int Qtsu(unsigned char histogram[256]);
+int Qtsu(QImage Inimg);
 int Average_Threshold(QImage InGray);
 QImage  cvMatToQImage( const cv::Mat &inMat );
 QImage MatToQImage(const cv::Mat& mat);

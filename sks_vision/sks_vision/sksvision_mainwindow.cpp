@@ -8,7 +8,7 @@ QImage frame(640,480,QImage::Format_RGB888);
 QImage org_frame(640,480,QImage::Format_RGB888);
 int bw_sw;
 
-char compareBlackWhite(QImage img, int h);
+char compareBlackWhite(QImage img, int height);
 void Segmentation1(QImage Inimg, QImage *Outimg, int h, int threshold);
 
 int Storage[2][800]={0};
@@ -46,6 +46,7 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
         gray = ui->bar_threshold->value();
     }else{
         gray = Average_Threshold(frame);
+//        gray = Qtsu(frame);
     }
     for(int h=0;h<frame.height();h++){
         for(int w=0;w<frame.width();w++){
@@ -63,6 +64,7 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
 //=================================================================================================
 //=================================================================================================
     memset(Position,0,sizeof(Position)/sizeof(Position[0][0]));
+
     for(int h=2;h < frame.height()-2;h+=(frame.height()/ui->bar_linear->value())){
         bw_sw = compareBlackWhite(org_frame,h);
         if(bw_sw==0){
@@ -106,15 +108,23 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
     ui->showlabel->setPixmap(QPixmap::fromImage(frame));//*/
 }
 
-char compareBlackWhite(QImage img, int h){
+char compareBlackWhite(QImage img, int height){
+    int white_all=0,black_all=0;
+    for(int h=0;h<img.height();h++){
+        for(int w=0;w<img.width();w++){
+            if(qRed(img.pixel(w,h)==255)) white_all++;
+            else black_all++;
+        }
+    }
+
     int black=1,white=1;
     for(int w=0;w<img.width();w++){
-        if(qRed(img.pixel(w,h))==255) white++;
+        if(qRed(img.pixel(w,height))==255) white++;
         else    black++;
     }
     if((white==img.width()+1) || (black==img.width()+1)) return 3;
-    else if(white > black && white/black<=10) return 1;
-    else if(black > white && black/white<=10) return 0;
+    else if(white_all>black_all && white > black && white/black<=10) return 1;
+    else if(white_all<black_all && black > white && black/white<=10) return 0;
     else return 2;
 }
 void Segmentation1(QImage Inimg,QImage *Outimg,int h,int threshold){
