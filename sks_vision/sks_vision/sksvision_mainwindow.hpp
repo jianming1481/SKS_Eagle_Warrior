@@ -7,7 +7,9 @@
 #include <QObject>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>
-#include "func.h"
+#include "func.hpp"
+#include "qsks_vision.hpp"
+#include <geometry_msgs/Vector3.h>
 
 #define PI 3.14159
 
@@ -25,6 +27,8 @@ public:
 
 protected:
     void timerEvent(QTimerEvent *e);
+    ros::Publisher pub_m;
+    ros::NodeHandle p;
 
 private:
     Ui::sksVision_MainWindow *ui;

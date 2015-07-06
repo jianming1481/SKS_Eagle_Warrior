@@ -4,54 +4,48 @@
 
 cmake_minimum_required(VERSION 2.8.0)
 project(sks_vision)
+find_package(catkin)
 
 ##############################################################################
 # Catkin
 ##############################################################################
 
 # qt_build provides the qt cmake glue, roscpp the comms for a default talker
-find_package(catkin REQUIRED COMPONENTS qt_build roscpp
-message_generation std_msgs sensor_msgs cv_bridge image_transport)
+find_package(catkin REQUIRED COMPONENTS qt_build message_generation std_msgs roscpp
+	     sensor_msgs cv_bridge image_transport)
 include_directories(${catkin_INCLUDE_DIRS})
-# Use this to define what the package will export (e.g. libs, headers).
-# Since the default here is to produce only a binary, we don't worry about
-# exporting anything. 
-catkin_package()
 
 ##############################################################################
 # Qt Environment
 ##############################################################################
 
 # this comes from qt_build's qt-ros.cmake which is automatically 
-# included via the dependency call in package.xml
+# included via the dependency call in manifest.xml
 rosbuild_prepare_qt4(QtCore QtGui) # Add the appropriate components to the component list here
 
 ##############################################################################
-# Sections
+# Services
 ##############################################################################
-#sks_vision
-file(GLOB QT_FORMS_sks_vision RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} sks_vision/sksvision_mainwindow.ui)
-file(GLOB_RECURSE QT_MOC_sks_vision RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS sks_vision/sksvision_mainwindow.h sks_vision/func.h
-#sks_vision/qInterface.hpp sks_vision/qnode.hpp
+
+#add_service_files(DIRECTORY srv FILES TwoInts.srv)
+add_service_files(
+  FILES
 )
-#sks_vision
-QT4_WRAP_UI(QT_FORMS_HPP_sks_vision ${QT_FORMS_sks_vision})
-QT4_WRAP_CPP(QT_MOC_HPP_sks_vision ${QT_MOC_sks_vision})
-
-
-##############################################################################
-# Sources
-##############################################################################
-#sks_vision
-file(GLOB_RECURSE QT_SOURCES_sks_vision RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS sks_vision/main.cpp sks_vision/sksvision_mainwindow.cpp sks_vision/func.cpp
-#sks_vision/qInterface.cpp sks_vision/qnode.cpp
+add_message_files(
+  FILES
 )
+generate_messages(DEPENDENCIES std_msgs)
+catkin_package(CATKIN_DEPENDS message_runtime std_msgs roscpp 
+		sensor_msgs cv_bridge image_transport)
 
 ##############################################################################
-# Binaries
+# Subprojects
 ##############################################################################
-#sks_vision
-add_executable(sks_vision ${QT_SOURCES_sks_vision} ${QT_FORMS_HPP_sks_vision} ${QT_MOC_HPP_sks_vision})
-target_link_libraries(sks_vision ${QT_LIBRARIES} ${catkin_LIBRARIES})
 
-
+foreach(subdir
+    common
+    sks_vision
+    )
+  #install(DIRECTORY ${subdir} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qt_tutorials)
+  add_subdirectory(${subdir})
+endforeach()

@@ -1,7 +1,7 @@
 #ifndef FUNC_H
 #define FUNC_H
 
-#include "func.h"
+#include "func.hpp"
 #include <QImage>
 #include <QColor>
 #include <math.h>

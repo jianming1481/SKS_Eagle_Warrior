@@ -1,5 +1,5 @@
-#include "sksvision_mainwindow.h"
-#include "ui_sksvision_mainwindow.h"
+#include "sksvision_mainwindow.hpp"
+#include "sks_vision/ui_sksvision_mainwindow.h"
 #include "memory.h"
 
 cv::VideoCapture cap(200);
@@ -7,6 +7,8 @@ cv::Mat cvframe;
 QImage frame(640,480,QImage::Format_RGB888);
 QImage org_frame(640,480,QImage::Format_RGB888);
 int bw_sw;
+
+geometry_msgs::Vector3 vec3;
 
 char compareBlackWhite(QImage img, int height);
 void Segmentation1(QImage Inimg, QImage *Outimg, int h, int threshold);
@@ -24,6 +26,7 @@ sksVision_MainWindow::sksVision_MainWindow(QWidget *parent):
     QMainWindow(parent),
     ui(new Ui::sksVision_MainWindow)
 {
+    pub_m = p.advertise<geometry_msgs::Vector3>("/sks_vision",1000);
     ui->setupUi(this);
     startTimer(1);
 }
@@ -106,12 +109,17 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
     }
     total_x =0,total_y =0,push_p =0;
     ui->showlabel->setPixmap(QPixmap::fromImage(frame));//*/
+
+    vec3.z = ang;
+    pub_m.publish(vec3);
+    ros::Rate loop_rate(30);
+    loop_rate.sleep();
 }
 
 char compareBlackWhite(QImage img, int height){
     int white_all=0,black_all=0;
-    for(int h=0;h<img.height();h++){
-        for(int w=0;w<img.width();w++){
+    for(int h=0;h<img.height();h+=2){
+        for(int w=0;w<img.width();w+=2){
             if(qRed(img.pixel(w,h)==255)) white_all++;
             else black_all++;
         }
@@ -123,8 +131,8 @@ char compareBlackWhite(QImage img, int height){
         else    black++;
     }
     if((white==img.width()+1) || (black==img.width()+1)) return 3;
-    else if(white_all>black_all && white > black && white/black<=10) return 1;
-    else if(white_all<black_all && black > white && black/white<=10) return 0;
+    else if(white_all<black_all && white > black && white/black<=10) return 1;
+    else if(white_all>black_all && black > white && black/white<=10) return 0;
     else return 2;
 }
 void Segmentation1(QImage Inimg,QImage *Outimg,int h,int threshold){
