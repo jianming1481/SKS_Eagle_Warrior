@@ -35,7 +35,7 @@ file(GLOB_RECURSE QT_MOC_test_node RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_S
 #sks_vision
 file(GLOB QT_FORMS_sks_vision RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} sks_vision/sksvision_mainwindow.ui)
 file(GLOB_RECURSE QT_MOC_sks_vision RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS sks_vision/sksvision_mainwindow.h sks_vision/func.h
-#sks_vision/qvision.hpp sks_vision/qnode.hpp
+#sks_vision/qInterface.hpp sks_vision/qnode.hpp
 )
 #test_node
 QT4_WRAP_UI(QT_FORMS_HPP_test_node ${QT_FORMS_test_node})
@@ -52,7 +52,7 @@ QT4_WRAP_CPP(QT_MOC_HPP_sks_vision ${QT_MOC_sks_vision})
 file(GLOB_RECURSE QT_SOURCES_test_node RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS test_node/main.cpp test_node/testnode_mainwindow.cpp)
 #sks_vision
 file(GLOB_RECURSE QT_SOURCES_sks_vision RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS sks_vision/main.cpp sks_vision/sksvision_mainwindow.cpp sks_vision/func.cpp
-#sks_vision/qvision.cpp sks_vision/qnode.cpp
+#sks_vision/qInterface.cpp sks_vision/qnode.cpp
 )
 
 ##############################################################################
