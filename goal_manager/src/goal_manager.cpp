@@ -44,16 +44,26 @@ int main(int argc, char** argv){
 	Client.waitForServer(); //will wait for infinite time
 	move_base_msgs::MoveBaseGoal goal;
 	goal.target_pose.header.frame_id = "map";
-	bool goal_one_send = false,goal_two_send = false,goal_one_cancel = false,goal_two_cancel = false;
+	bool goal_one_send = false,goal_two_send = false,goal_one_cancel = false,goal_two_cancel = false,swap_detect = false;
 	
 	
 	
 	while(ros::ok()){
+		if(posx>target_one_x+0.1&&posx<target_one_x-0.1&&
+	   	   posy>target_one_y+0.1&&posy<target_one_y-0.1&&
+		   posx>target_two_x+0.1&&posx<target_two_x-0.1&&
+	   	   posy>target_two_y+0.1&&posy<target_two_y-0.1  ){
+			
+			sp.linear.x  = forward_speed;
+			sp.angular.z = ang*3.14/90;
+			speed_com.publish(sp);
+		} 
+
 		sp.linear.x  = forward_speed;
-		sp.angular.z = ang/3.14;
+		sp.angular.z = ang*3.14/90;
 		speed_com.publish(sp);	
-		if(posx<target_one_x+0.1&&posx>target_one_x-0.1&&
-	   	   posy<target_one_y+0.1&&posy>target_one_y-0.1&& !goal_one_send){
+		if(posx<target_one_x+0.2&&posx>target_one_x-0.2&&
+	   	   posy<target_one_y+0.2&&posy>target_one_y-0.2&& !goal_one_send){
 			ROS_INFO("arrived first target, sending first goal...");
 			goal.target_pose.pose.position.x = goal_one_x;
 			goal.target_pose.pose.position.y = goal_one_y;	
@@ -66,8 +76,8 @@ int main(int argc, char** argv){
 			Client.sendGoal(goal);
 			goal_one_send = true;
 		}
-		if(posx<target_two_x+0.1&&posx>target_two_x-0.1&&
-	   	   posy<target_two_y+0.1&&posy>target_two_y-0.1&& !goal_two_send){
+		if(posx<target_two_x+0.2&&posx>target_two_x-0.2&&
+	   	   posy<target_two_y+0.2&&posy>target_two_y-0.2&& !goal_two_send){
 			ROS_INFO("arrived second target, sending second goal...");
 			goal.target_pose.pose.position.x = goal_two_x;
 			goal.target_pose.pose.position.y = goal_two_y;	
@@ -80,8 +90,8 @@ int main(int argc, char** argv){
 			Client.sendGoal(goal);
 			goal_two_send = true;
 		}
-		if(posx<goal_one_x+0.1&&posx>goal_one_x-0.1&&
-	   	   posy<goal_one_y+0.1&&posy>goal_one_y-0.1&& !goal_one_cancel){
+		if(posx<goal_one_x+0.2&&posx>goal_one_x-0.2&&
+	   	   posy<goal_one_y+0.2&&posy>goal_one_y-0.2&& !goal_one_cancel){
 			ROS_INFO("arrived first goal!");
 			Client.cancelAllGoals();
 			goal_one_cancel = true;
@@ -93,7 +103,7 @@ int main(int argc, char** argv){
 			goal_two_cancel = true;		
 		}
 		if(posx<target_one_x+0.1&&posx>target_one_x-0.1&&
-	   	   posy<target_one_y+0.1&&posy>target_one_y-0.1  ){
+	   	   posy<target_one_y+0.1&&posy>target_one_y-0.1&& !swap_detect){
 			com.data = 'g';
 			arm_command.publish(com);
 		} 
