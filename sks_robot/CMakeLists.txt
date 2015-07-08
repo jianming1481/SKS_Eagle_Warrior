@@ -39,6 +39,7 @@ catkin_package(CATKIN_DEPENDS message_runtime std_msgs roscpp)
 foreach(subdir
     common
     motion
+    kinematic
     sks_ui
     )
   #install(DIRECTORY ${subdir} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qt_tutorials)

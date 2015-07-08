@@ -28,12 +28,12 @@ rosbuild_prepare_qt4(QtCore QtGui) # Add the appropriate components to the compo
 ##############################################################################
 
 #add_service_files(DIRECTORY srv FILES TwoInts.srv)
-add_service_files(
-  FILES
-)
-add_message_files(
-  FILES
-)
+#add_service_files(
+#  FILES
+#)
+#add_message_files(
+#  FILES
+#)
 generate_messages(DEPENDENCIES std_msgs)
 catkin_package(CATKIN_DEPENDS message_runtime std_msgs roscpp 
 		sensor_msgs cv_bridge image_transport)
