@@ -25,6 +25,8 @@ public:
     explicit sksVision_MainWindow(QWidget *parent = 0);
     ~sksVision_MainWindow();
 
+    void Showimg(cv::Mat frame);
+
 protected:
     void timerEvent(QTimerEvent *e);
     ros::Publisher pub_m;

@@ -1,11 +1,14 @@
 #include "sksvision_mainwindow.hpp"
 #include "sks_vision/ui_sksvision_mainwindow.h"
 #include "memory.h"
+#define THRESHOLD_MAX 34
+#define THRESHOLD_MIN 26
 
-cv::VideoCapture cap(200);
-cv::Mat cvframe;
+cv::VideoCapture cap(201);
+cv::Mat cvframe,cvGray;
 QImage frame(640,480,QImage::Format_RGB888);
 QImage org_frame(640,480,QImage::Format_RGB888);
+QImage test_frame(640,480,QImage::Format_RGB888);
 int bw_sw;
 
 geometry_msgs::Vector3 vec3;
@@ -41,33 +44,37 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
     ui->shownum_linear->setNum(ui->bar_linear->value());
     ui->shownum_threshold->setNum(ui->bar_threshold->value());
     cap >> cvframe;
-    frame = MatToQImage(cvframe);
 
-    frame = func_Gray(frame);
+    //Gray
+//    cv::cvtColor(cvframe, cvGray, CV_RGB2GRAY);
+//    cv::equalizeHist(cvGray,cvGray);
+//    frame = Mat2QImage(cvGray);
+    frame = MatToQImage(cvframe);
+//    frame = func_Gray(frame);
+    frame = func_DeepGray(frame);
+
+    //Threshold_bar --> Threshold
     int gray;
     if(ui->checkbox_threshold->isChecked()){
         gray = ui->bar_threshold->value();
+        ui->shownum_autoThreshold->setNum(0);
     }else{
         gray = Average_Threshold(frame);
 //        gray = Qtsu(frame);
+        ui->shownum_autoThreshold->setNum(gray);
+
+        if(gray > THRESHOLD_MAX) gray = 29;
+        else if(gray < THRESHOLD_MIN) gray = 20;
     }
-    for(int h=0;h<frame.height();h++){
-        for(int w=0;w<frame.width();w++){
-            if(qRed(frame.pixel(w,h)) > gray)
-                frame.setPixel(w,h,QColor(255,255,255).rgb());
-            else
-                frame.setPixel(w,h,QColor(0,0,0).rgb());
-        }
-    }
+    frame = func_Threshold(frame,gray);
+
     org_frame = frame;
-    for(int dot=2;dot < frame.height()-2;dot+=(frame.height()/ui->bar_linear->value()))
-    {
+    for(int dot=2;dot < frame.height()-2;dot+=(frame.height()/ui->bar_linear->value())){
         for(int i=0;i<frame.width();i++)   frame.setPixel(i,dot,QColor(0,255,0).rgb());
     }
-//=================================================================================================
-//=================================================================================================
+    //reset
     memset(Position,0,sizeof(Position)/sizeof(Position[0][0]));
-
+    //Segmentation
     for(int h=2;h < frame.height()-2;h+=(frame.height()/ui->bar_linear->value())){
         bw_sw = compareBlackWhite(org_frame,h);
         if(bw_sw==0){
@@ -76,7 +83,7 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
             Segmentation1(org_frame,&frame,h,0);
         }
     }
-    if(push_p!=0){
+    if(push_p>1){
         for(int i=0;i<push_p;i++){
             total_x += Position[0][i];
             total_y += Position[1][i];
@@ -106,16 +113,25 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
         frame.setPixel(vector_x+1,vector_y-1,QColor(0,0,255).rgb());
         frame.setPixel(vector_x+1,vector_y,QColor(0,0,255).rgb());
         frame.setPixel(vector_x+1,vector_y+1,QColor(0,0,255).rgb());
+        vec3.z = ang;
+    }else{
+        ui->shownum_avgVector->setText(tr("<font color=blue>(%1 : %2)</font>").arg(999).arg(999));
+        ui->shownum_angular->setNum(999);
+        vec3.z = 999;
     }
-    total_x =0,total_y =0,push_p =0;
-    ui->showlabel->setPixmap(QPixmap::fromImage(frame));//*/
+    //reset
+    total_x =0,total_y =0,push_p =0;//*/
 
-    vec3.z = ang;
+    //ShowImg
+    ui->showlabel->setPixmap(QPixmap::fromImage(frame));
+    //ROS
     pub_m.publish(vec3);
     ros::Rate loop_rate(30);
     loop_rate.sleep();
 }
-
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
 char compareBlackWhite(QImage img, int height){
     int white_all=0,black_all=0;
     for(int h=0;h<img.height();h+=2){
@@ -132,7 +148,7 @@ char compareBlackWhite(QImage img, int height){
     }
     if((white==img.width()+1) || (black==img.width()+1)) return 3;
     else if(white_all<black_all && white > black && white/black<=10) return 1;
-    else if(white_all>black_all && black > white && black/white<=10) return 0;
+    else if(white_all<black_all && black > white && black/white<=10) return 0;
     else return 2;
 }
 void Segmentation1(QImage Inimg,QImage *Outimg,int h,int threshold){
@@ -194,4 +210,14 @@ void Segmentation1(QImage Inimg,QImage *Outimg,int h,int threshold){
     Position[0][push_p]=Xpos;
     Position[1][push_p]=h;
     push_p++;
+}
+void sksVision_MainWindow::Showimg(cv::Mat frame){
+    QImage img(frame.cols,frame.rows,QImage::Format_RGB888);
+    for(int i=0;i<frame.rows;i++){
+        for(int j=0;j<frame.cols;j++){
+            unsigned char color = frame.data[(i*frame.cols)+j];
+            img.setPixel(j,i,QColor(color,color,color).rgb());
+        }
+    }
+    ui->showlabel->setPixmap(QPixmap::fromImage(img));
 }

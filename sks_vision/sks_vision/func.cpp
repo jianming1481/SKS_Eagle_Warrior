@@ -3,14 +3,25 @@
 #include <string.h>
 
 unsigned char histogram[256]={0};
-
 char switch_autoThreshold=1;
+
 QImage func_Gray(QImage Inimg){
     QImage temp(Inimg.width(),Inimg.height(),QImage::Format_RGB888);
     unsigned char gray;
     for(int h=0;h<Inimg.height();h++){
         for(int w=0;w<Inimg.width();w++){
             gray = (qRed(Inimg.pixel(w,h)) + qGreen(Inimg.pixel(w,h)) + qBlue(Inimg.pixel(w,h)))/3;
+            temp.setPixel(w,h,QColor(gray,gray,gray).rgb());
+        }
+    }
+    return temp;
+}
+QImage func_DeepGray(QImage Inimg){
+    QImage temp(Inimg.width(),Inimg.height(),QImage::Format_RGB888);
+    unsigned char gray;
+    for(int h=0;h<Inimg.height();h++){
+        for(int w=0;w<Inimg.width();w++){
+            gray = (qRed(Inimg.pixel(w,h))*0.299 + qGreen(Inimg.pixel(w,h))*0.587 + qBlue(Inimg.pixel(w,h))*0.114)/3;
             temp.setPixel(w,h,QColor(gray,gray,gray).rgb());
         }
     }
@@ -89,6 +100,25 @@ int Average_Threshold(QImage InGray){
         std::cout<<"It's not Gray Image"<<std::endl;
         return 0;
     }
+}
+int Average_Threshold(cv::Mat InGray){
+    if(switch_autoThreshold){
+        std::cout<<"using Average's Thresholding"<<std::endl;
+        switch_autoThreshold=0;
+    }
+    unsigned char B = InGray.data[(10*InGray.cols*3)+(10*3)+0];
+    unsigned char G = InGray.data[(10*InGray.cols*3)+(10*3)+1];
+    unsigned char R = InGray.data[(10*InGray.cols*3)+(10*3)+2];
+
+    int total=0;
+    if(B==G && G==R && R==B){
+        for(int h=0;h<InGray.rows;h++){
+            for(int w=0;w<InGray.cols;w++){
+                total += InGray.data[(h*InGray.cols*3)+(w*3)+0];
+            }
+        }
+    }
+    return total/(InGray.cols*InGray.rows);
 }
 QImage  cvMatToQImage( const cv::Mat &inMat )
 {
@@ -215,4 +245,43 @@ void IplImageToQImage(const IplImage *pIplImage,QImage qimg)
         }
     }
     qimg = *qImage;
+}
+//Threshold
+QImage func_Threshold(QImage Inframe,int gray){
+    for(int h=0;h<Inframe.height();h++){
+        for(int w=0;w<Inframe.width();w++){
+            if(qRed(Inframe.pixel(w,h)) > gray)
+                Inframe.setPixel(w,h,QColor(255,255,255).rgb());
+            else
+                Inframe.setPixel(w,h,QColor(0,0,0).rgb());
+        }
+    }
+    return Inframe;
+}
+cv::Mat func_Threshold(cv::Mat Inframe,int gray){
+    for(int h=0;h<Inframe.rows;h++){
+        for(int w=0;w<Inframe.cols;w++){
+            if(Inframe.data[(h*Inframe.cols*3)+(w*3)+0] > gray){
+                Inframe.data[(h*Inframe.cols*3)+(w*3)+0] = 255;
+                Inframe.data[(h*Inframe.cols*3)+(w*3)+1] = 255;
+                Inframe.data[(h*Inframe.cols*3)+(w*3)+2] = 255;
+            }else{
+                Inframe.data[(h*Inframe.cols*3)+(w*3)+0] = 0;
+                Inframe.data[(h*Inframe.cols*3)+(w*3)+1] = 0;
+                Inframe.data[(h*Inframe.cols*3)+(w*3)+2] = 0;
+            }
+        }
+    }
+    return Inframe;
+}
+QImage Mat2QImage(cv::Mat frame){
+    //for gray image was converted by opencv
+    QImage img(frame.cols,frame.rows,QImage::Format_RGB888);
+    for(int i=0;i<frame.rows;i++){
+        for(int j=0;j<frame.cols;j++){
+            unsigned char color = frame.data[(i*frame.cols)+j];
+            img.setPixel(j,i,QColor(color,color,color).rgb());
+        }
+    }
+    return img;
 }
