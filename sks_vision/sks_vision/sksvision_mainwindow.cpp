@@ -1,8 +1,9 @@
 #include "sksvision_mainwindow.hpp"
 #include "sks_vision/ui_sksvision_mainwindow.h"
 #include "memory.h"
-#define THRESHOLD_MAX 34
-#define THRESHOLD_MIN 26
+#define THRESHOLD_MAX 35
+#define THRESHOLD_MIN 30
+#define BLACK_BLOCK 305000
 
 cv::VideoCapture cap(201);
 cv::Mat cvframe,cvGray;
@@ -52,25 +53,42 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
     frame = MatToQImage(cvframe);
 //    frame = func_Gray(frame);
     frame = func_DeepGray(frame);
-
+    test_frame=frame;
+//==============================================================
+    int blacknum=0;
+    for(int h=0;h<test_frame.height();h++){
+        for(int w=0;w<test_frame.width();w++){
+            if(qRed(test_frame.pixel(w,h))<=60&&qRed(test_frame.pixel(w,h))>=20) blacknum++;
+        }
+    }
+//   std::cout<<blacknum<<std::endl;
+//===============================================================
     //Threshold_bar --> Threshold
     int gray;
     if(ui->checkbox_threshold->isChecked()){
         gray = ui->bar_threshold->value();
         ui->shownum_autoThreshold->setNum(0);
     }else{
-        gray = Average_Threshold(frame);
-//        gray = Qtsu(frame);
-        ui->shownum_autoThreshold->setNum(gray);
+        if(blacknum>=BLACK_BLOCK){
+             gray=70;
+             ui->shownum_autoThreshold->setNum(70);
+         }else{
+            gray = Average_Threshold(frame);
+//            gray = Qtsu(frame);
 
-        if(gray > THRESHOLD_MAX) gray = 29;
-        else if(gray < THRESHOLD_MIN) gray = 20;
+            if(gray > THRESHOLD_MAX) gray = 24;
+            else if(gray < THRESHOLD_MIN) gray = 51;
+
+            ui->shownum_autoThreshold->setNum(gray);
+        }
     }
     frame = func_Threshold(frame,gray);
 
     org_frame = frame;
     for(int dot=2;dot < frame.height()-2;dot+=(frame.height()/ui->bar_linear->value())){
-        for(int i=0;i<frame.width();i++)   frame.setPixel(i,dot,QColor(0,255,0).rgb());
+        for(int i=0;i<frame.width();i++){
+            frame.setPixel(i,dot,QColor(0,255,0).rgb());
+        }
     }
     //reset
     memset(Position,0,sizeof(Position)/sizeof(Position[0][0]));
@@ -90,14 +108,14 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
         }
         double vector_x=total_x/push_p;
         double vector_y=total_y/push_p;
-        double vector_h=Position[1][push_p-1]-vector_y;
-        double vector_w=(Position[0][push_p-1]-vector_x)/vector_h;
+        double vector_h=frame.height()-1-vector_y;
+        double vector_w=(frame.width()/2-1-vector_x)/vector_h;
 
         for(int i=0;i<vector_h;i++){
-            frame.setPixel(Position[0][push_p-1]-vector_w*i,Position[1][push_p-1]-i,QColor(0,0,255).rgb());
+            frame.setPixel(frame.width()/2-1-vector_w*i,frame.height()-1-i,QColor(0,0,255).rgb());
         }
-        final_w=vector_x-Position[0][push_p-1];
-        final_h=Position[1][push_p-1]-vector_y;
+        final_w=vector_x-frame.width()/2;
+        final_h=frame.height()-1-vector_y;
 
         ang=atan(final_w/final_h);
 
