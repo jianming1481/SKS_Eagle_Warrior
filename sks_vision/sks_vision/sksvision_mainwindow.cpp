@@ -30,7 +30,7 @@ sksVision_MainWindow::sksVision_MainWindow(QWidget *parent):
     QMainWindow(parent),
     ui(new Ui::sksVision_MainWindow)
 {
-    pub_m = p.advertise<geometry_msgs::Vector3>("/sks_vision",1000);
+    pub_m = p.advertise<geometry_msgs::Vector3>("/sks_vision",100);
     ui->setupUi(this);
     startTimer(1);
 }
@@ -58,7 +58,7 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
     int blacknum=0;
     for(int h=0;h<test_frame.height();h++){
         for(int w=0;w<test_frame.width();w++){
-            if(qRed(test_frame.pixel(w,h))<=60&&qRed(test_frame.pixel(w,h))>=20) blacknum++;
+            if(qRed(test_frame.pixel(w,h))<=64&&qRed(test_frame.pixel(w,h))>=27) blacknum++;//60,20
         }
     }
 //   std::cout<<blacknum<<std::endl;
@@ -144,7 +144,7 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
     ui->showlabel->setPixmap(QPixmap::fromImage(frame));
     //ROS
     pub_m.publish(vec3);
-    ros::Rate loop_rate(30);
+    ros::Rate loop_rate(100);
     loop_rate.sleep();
 }
 //------------------------------------------------------------------------------------

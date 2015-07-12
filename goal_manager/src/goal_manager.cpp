@@ -70,6 +70,7 @@ int main(int argc, char** argv){
 				speed_com.publish(sp2);	
 			}
 		}
+
 		if(cu_pos.pose.position.x<target_one_x+0.2&&cu_pos.pose.position.x>target_one_x-0.2&&
 	   	   cu_pos.pose.position.y<target_one_y+0.2&&cu_pos.pose.position.y>target_one_y-0.2&& !goal_one_send){
 			ROS_INFO("arrived first target, sending first goal...");
