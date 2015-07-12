@@ -11,7 +11,8 @@ project(sks_camera)
 
 # qt_build provides the qt cmake glue, roscpp the comms for a default talker
 find_package(catkin REQUIRED COMPONENTS qt_build roscpp
-message_generation std_msgs sensor_msgs cv_bridge image_transport)
+message_generation std_msgs sensor_msgs cv_bridge image_transport
+)
 find_package(OpenCV)
 
 include_directories(${catkin_INCLUDE_DIRS})

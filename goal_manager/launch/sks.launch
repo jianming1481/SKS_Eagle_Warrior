@@ -6,10 +6,10 @@
 	<!--<node pkg="hokuyo_node"  name="hokuyo_node" type="hokuyo_node" output="screen"/>-->
 
 	<!--for simulating in gazebo simulator (using $type="gzserver" to simulate without gazebosimulator)-->
-	<node pkg="gazebo_ros" type="gzserver" args="$(find goal_manager)/world/sks.world" name="gazebo" required="true">
+	<!--<node pkg="gazebo_ros" type="gzserver" args="$(find goal_manager)/world/sks.world" name="gazebo" required="true">
 	<remap from="/lizi/cmd_vel" to="/cmd_vel" />
         <remap from="/lizi/scan_raw" to="/scan" />
-	</node>
+	</node>-->
 
 	<node pkg="hector_map_server" name="hector_map_server" type="hector_map_server"/>		
 	

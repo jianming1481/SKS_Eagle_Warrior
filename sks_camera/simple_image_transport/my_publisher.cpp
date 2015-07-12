@@ -1,14 +1,15 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv/cv.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sstream> // for converting the command line parameter to integer
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#define COUNTER 6
-#define COMPRESSED_WIDTH 120
-#define COMPRESSED_HEIGHT 90
+#define COUNTER 8
+#define COMPRESSED_WIDTH 160
+#define COMPRESSED_HEIGHT 120
 
 using namespace std;
 int camera_num,random_num;
@@ -17,7 +18,7 @@ void colorReduce8(cv::Mat &image, int div);
 void colorReduce3(cv::Mat &image, int div);
 void colorReduce(cv::Mat& image, int div);
 
-cv::Mat frame;
+cv::Mat frame,cvGray;
 sensor_msgs::ImagePtr msg;
 
 int main(int argc, char** argv)

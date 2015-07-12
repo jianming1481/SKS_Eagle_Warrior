@@ -3,16 +3,16 @@
 ##############################################################################
 
 cmake_minimum_required(VERSION 2.8.0)
-project(sks_robot)
+project(sks_vision)
 find_package(catkin)
 
 ##############################################################################
-# Catkin Configuration
+# Catkin
 ##############################################################################
 
-# These find_package calls setup catkin_INCLUDE_DIRS and ROS_LIBRARIES and 
-# all the component variables too (e.g. roscpp_INCLUDE_DIR?)
-find_package(catkin REQUIRED COMPONENTS qt_build message_generation std_msgs roscpp)
+# qt_build provides the qt cmake glue, roscpp the comms for a default talker
+find_package(catkin REQUIRED COMPONENTS qt_build message_generation std_msgs roscpp
+	     sensor_msgs cv_bridge image_transport)
 include_directories(${catkin_INCLUDE_DIRS})
 
 ##############################################################################
@@ -27,10 +27,16 @@ rosbuild_prepare_qt4(QtCore QtGui) # Add the appropriate components to the compo
 # Services
 ##############################################################################
 
-add_service_files(DIRECTORY srv FILES TwoInts.srv test_srv.srv)
+#add_service_files(DIRECTORY srv FILES TwoInts.srv)
+#add_service_files(
+#  FILES
+#)
+#add_message_files(
+#  FILES
+#)
 generate_messages(DEPENDENCIES std_msgs)
-
-catkin_package(CATKIN_DEPENDS message_runtime std_msgs roscpp)
+catkin_package(CATKIN_DEPENDS message_runtime std_msgs roscpp 
+		sensor_msgs cv_bridge image_transport)
 
 ##############################################################################
 # Subprojects
@@ -38,18 +44,8 @@ catkin_package(CATKIN_DEPENDS message_runtime std_msgs roscpp)
 
 foreach(subdir
     common
-    motion
-    kinematic
-    sks_ui
+    sks_vision
     )
   #install(DIRECTORY ${subdir} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qt_tutorials)
   add_subdirectory(${subdir})
 endforeach()
-
-##############################################################################
-# Optional Installs - these aren't really necessary
-##############################################################################
-
-install(DIRECTORY resources DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qt_tutorials)
-install(DIRECTORY ui DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qt_tutorials)
-

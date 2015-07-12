@@ -5,7 +5,7 @@
 #include <std_msgs/Char.h>
 #include <actionlib/client/simple_action_client.h>
 #include <geometry_msgs/Twist.h>
-
+#include <math.h>
 #define target_one_x  100.0 //1.0
 #define target_one_y  100.0 //-5.48
 #define target_two_x -100.940
@@ -19,16 +19,16 @@
 #define forward_speed 20
 
 
-float posx,posy;
-float ang;
-
-
-void current_pos(const geometry_msgs::PoseStamped& pos){
-	posx = pos.pose.position.x;
-	posy = pos.pose.position.y;
+//float posx,posy;
+geometry_msgs::Twist sp;
+geometry_msgs::Twist sp2;
+geometry_msgs::PoseStamped cu_pos;
+void current_pos(const geometry_msgs::PoseStamped::ConstPtr& pos){
+	cu_pos.pose.position.x = pos->pose.position.x;
+	cu_pos.pose.position.y = pos->pose.position.y;
 }
-void vec2speed(const geometry_msgs::Vector3& vec){
-	ang = vec.z;
+void vec2speed(const geometry_msgs::Vector3::ConstPtr& vec){	
+	sp.angular.z = vec->z;	
 }
 int main(int argc, char** argv){
 	ros::init(argc, argv, "goal_manager");
@@ -37,33 +37,41 @@ int main(int argc, char** argv){
 	ros::Subscriber position_sub = n.subscribe("/slam_out_pose",10,current_pos);
 	ros::Subscriber vec_sub      = n.subscribe("/sks_vision",1,vec2speed);
 	ros::Publisher  arm_command  = n.advertise<std_msgs::Char>("/cmd_pos",1);
-	ros::Publisher  speed_com    = n.advertise<geometry_msgs::Twist>("/cmd_vel",1);
+	ros::Publisher  speed_com    = n.advertise<geometry_msgs::Twist>("/cmd_vel",10);
+
 	std_msgs::Char  com;
-	geometry_msgs::Twist sp;
+	
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> Client("move_base", true);
-	Client.waitForServer(); //will wait for infinite time
+	//Client.waitForServer(); //will wait for infinite time
 	move_base_msgs::MoveBaseGoal goal;
 	goal.target_pose.header.frame_id = "map";
 	bool goal_one_send = false,goal_two_send = false,goal_one_cancel = false,goal_two_cancel = false,swap_detect = false;
 	
-	
+	ros::Rate rate(30);
 	
 	while(ros::ok()){
-		if(posx>target_one_x+0.1&&posx<target_one_x-0.1&&
-	   	   posy>target_one_y+0.1&&posy<target_one_y-0.1&&
-		   posx>target_two_x+0.1&&posx<target_two_x-0.1&&
-	   	   posy>target_two_y+0.1&&posy<target_two_y-0.1  ){
-			
-			sp.linear.x  = forward_speed;
-			sp.angular.z = ang*3.14/90;
-			speed_com.publish(sp);
-		} 
-
-		sp.linear.x  = forward_speed;
-		sp.angular.z = ang*3.14/90;
-		speed_com.publish(sp);	
-		if(posx<target_one_x+0.2&&posx>target_one_x-0.2&&
-	   	   posy<target_one_y+0.2&&posy>target_one_y-0.2&& !goal_one_send){
+		//if(posx>target_one_x+0.1&&posx<target_one_x-0.1&&
+	   	//   posy>target_one_y+0.1&&posy<target_one_y-0.1&&
+		//   posx>target_two_x+0.1&&posx<target_two_x-0.1&&
+	   	//   posy>target_two_y+0.1&&posy<target_two_y-0.1  )
+		
+		if(sp.angular.z<0.5&&sp.angular.z>-0.5){	
+			sp2.linear.x  = 20;
+			sp2.angular.z =	sp.angular.z;				
+			speed_com.publish(sp2);
+		}else{
+			if(sp.angular.z==999){		 
+				sp2.linear.x  = 0;
+				sp2.angular.z = 0;
+				speed_com.publish(sp2);
+			}else{
+				sp2.linear.x  = 0;
+				sp2.angular.z =	sp.angular.z;				
+				speed_com.publish(sp2);	
+			}
+		}
+		if(cu_pos.pose.position.x<target_one_x+0.2&&cu_pos.pose.position.x>target_one_x-0.2&&
+	   	   cu_pos.pose.position.y<target_one_y+0.2&&cu_pos.pose.position.y>target_one_y-0.2&& !goal_one_send){
 			ROS_INFO("arrived first target, sending first goal...");
 			goal.target_pose.pose.position.x = goal_one_x;
 			goal.target_pose.pose.position.y = goal_one_y;	
@@ -76,8 +84,8 @@ int main(int argc, char** argv){
 			Client.sendGoal(goal);
 			goal_one_send = true;
 		}
-		if(posx<target_two_x+0.2&&posx>target_two_x-0.2&&
-	   	   posy<target_two_y+0.2&&posy>target_two_y-0.2&& !goal_two_send){
+		if(cu_pos.pose.position.x<target_two_x+0.2&&cu_pos.pose.position.x>target_two_x-0.2&&
+	   	   cu_pos.pose.position.y<target_two_y+0.2&&cu_pos.pose.position.y>target_two_y-0.2&& !goal_two_send){
 			ROS_INFO("arrived second target, sending second goal...");
 			goal.target_pose.pose.position.x = goal_two_x;
 			goal.target_pose.pose.position.y = goal_two_y;	
@@ -90,23 +98,25 @@ int main(int argc, char** argv){
 			Client.sendGoal(goal);
 			goal_two_send = true;
 		}
-		if(posx<goal_one_x+0.2&&posx>goal_one_x-0.2&&
-	   	   posy<goal_one_y+0.2&&posy>goal_one_y-0.2&& !goal_one_cancel){
+		if(cu_pos.pose.position.x<goal_one_x+0.2&&cu_pos.pose.position.x>goal_one_x-0.2&&
+	   	   cu_pos.pose.position.y<goal_one_y+0.2&&cu_pos.pose.position.y>goal_one_y-0.2&& !goal_one_cancel){
 			ROS_INFO("arrived first goal!");
 			Client.cancelAllGoals();
 			goal_one_cancel = true;
 		}
-		if(posx<goal_two_x+0.1&&posx>goal_two_x-0.1&&
-	   	   posy<goal_two_y+0.1&&posy>goal_two_y-0.1&& !goal_two_cancel){
+		if(cu_pos.pose.position.x<goal_two_x+0.1&&cu_pos.pose.position.x>goal_two_x-0.1&&
+	   	   cu_pos.pose.position.y<goal_two_y+0.1&&cu_pos.pose.position.y>goal_two_y-0.1&& !goal_two_cancel){
 			ROS_INFO("arrived second goal!");
 			Client.cancelAllGoals();
 			goal_two_cancel = true;		
 		}
-		if(posx<target_one_x+0.1&&posx>target_one_x-0.1&&
-	   	   posy<target_one_y+0.1&&posy>target_one_y-0.1&& !swap_detect){
+		if(cu_pos.pose.position.x<target_one_x+0.1&&cu_pos.pose.position.x>target_one_x-0.1&&
+	   	   cu_pos.pose.position.y<target_one_y+0.1&&cu_pos.pose.position.y>target_one_y-0.1&& !swap_detect){
 			com.data = 'g';
 			arm_command.publish(com);
-		} 
+		}
+		ros::spinOnce();
+		rate.sleep();
 	}
 	return 0;
 }
