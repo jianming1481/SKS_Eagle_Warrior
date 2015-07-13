@@ -26,6 +26,7 @@ int check_size[800]={0};
 int push=0,pop=0,xmax=0,xmin=0,check_count=0,push_p=0;
 int total_x,total_y;
 float final_w,final_h,ang;
+int total_black=0,total_white=0;
 
 sksVision_MainWindow::sksVision_MainWindow(QWidget *parent):
     QMainWindow(parent),
@@ -112,8 +113,17 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
         for(int i=0;i<vector_h;i++){
             frame.setPixel(frame.width()/2-1-vector_w*i,frame.height()-1-i,QColor(0,0,255).rgb());
         }
-        final_w=vector_x-frame.width()/2;
-        final_h=frame.height()-1-vector_y;
+//        final_w = vector_x - (frame.width()/2);
+//        final_h = frame.height() - 1 - vector_y;
+
+        int sensor_x,sensor_y=100;
+        sensor_x = sensorPoint(org_frame,&frame,sensor_y);
+        final_w += sensor_x;
+        final_h += sensor_y;
+        sensor_y=380;
+        sensor_x = sensorPoint(org_frame,&frame,sensor_y);
+        final_w += sensor_x;
+        final_h += sensor_y;
 
         ang=atan(final_w/final_h);
 
@@ -137,6 +147,8 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
     }
     //reset
     total_x =0,total_y =0,push_p =0;//,h_max=0;//*/
+    final_w =0,final_h =0;
+    total_black=0;total_white=0;
 
     //ShowImg
     ui->showlabel->setPixmap(QPixmap::fromImage(frame));
@@ -164,10 +176,18 @@ char compareBlackWhite(QImage img, int height){
         if(qRed(img.pixel(w,height))==255) white++;
         else    black++;
     }
-    if((white==img.width()+1) || (black==img.width()+1)) return 3;
-    else if(white > black && white/black<=10) return 1;
-    else if(black > white && black/white<=10) return 0;//white_all<black_all &&
-    else return 2;
+    //if((white==img.width()+1) || (black==img.width()+1)) return 3;
+    if(abs(white-img.width())<10 || abs(black-img.width())<10){
+        return 3;
+    }else if(white > black && white/black<=10){
+        total_white++;
+        return 1;
+    }else if(black > white && black/white<=10){//white_all<black_all &&
+        total_black++;
+        return 0;
+    }else{
+        return 2;
+    }
 }
 void Segmentation1(QImage Inimg,QImage *Outimg,int h,int threshold){
     check_count =0;
@@ -240,4 +260,35 @@ void sksVision_MainWindow::Showimg(cv::Mat frame){
         }
     }
     ui->showlabel->setPixmap(QPixmap::fromImage(img));
+}
+int sksVision_MainWindow::sensorPoint(QImage oframe,QImage *frame,int height){
+    int width_band=90;
+    int avg_x=0,avg_y=0;
+    for(int i=-3;i<=3;i++){
+        if(i==0);
+        else{
+            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((frame->width()*0.5)+(i*width_band)+1,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((frame->width()*0.5)+(i*width_band)-1,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+1,QColor(0,0,255).rgb());
+            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height-1,QColor(0,0,255).rgb());
+        }
+    }
+    for(int i=-3;i<=3;i++){
+        if(i==0);
+        else{
+            if(total_white > total_black){
+                if(qRed(oframe.pixel((oframe.width()*0.5)+(i*width_band),height)) == 0){
+                    avg_x += i*width_band*i;
+                    frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
+                }
+            }else if(total_black > total_white){
+                if(qRed(oframe.pixel((oframe.width()*0.5)+(i*width_band),height)) == 255){
+                    avg_x += i*width_band*i;
+                    frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
+                }
+            }
+        }
+    }
+    return avg_x;
 }
