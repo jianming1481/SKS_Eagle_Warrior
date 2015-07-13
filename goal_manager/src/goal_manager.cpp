@@ -47,7 +47,7 @@ int main(int argc, char** argv){
 	goal.target_pose.header.frame_id = "map";
 	bool goal_one_send = false,goal_two_send = false,goal_one_cancel = false,goal_two_cancel = false,swap_detect = false;
 	
-	ros::Rate rate(30);
+	ros::Rate rate(1000);
 	
 	while(ros::ok()){
 		//if(posx>target_one_x+0.1&&posx<target_one_x-0.1&&
@@ -56,12 +56,12 @@ int main(int argc, char** argv){
 	   	//   posy>target_two_y+0.1&&posy<target_two_y-0.1  )
 		
 		if(sp.angular.z<0.5&&sp.angular.z>-0.5){	
-			sp2.linear.x  = 20;
+			sp2.linear.x  = 40;
 			sp2.angular.z =	sp.angular.z;				
 			speed_com.publish(sp2);
 		}else{
 			if(sp.angular.z==999){		 
-				sp2.linear.x  = 0;
+				sp2.linear.x  = 10;
 				sp2.angular.z = 0;
 				speed_com.publish(sp2);
 			}else{

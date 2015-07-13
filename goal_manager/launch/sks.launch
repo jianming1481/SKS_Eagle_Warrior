@@ -3,7 +3,7 @@
 <launch>
 	 <arg name="geotiff_map_file_path" default="$(find hector_geotiff)/maps"/>
 
-	<!--<node pkg="hokuyo_node"  name="hokuyo_node" type="hokuyo_node" output="screen"/>-->
+	<node pkg="hokuyo_node"  name="hokuyo_node" type="hokuyo_node" output="screen"/>
 
 	<!--for simulating in gazebo simulator (using $type="gzserver" to simulate without gazebosimulator)-->
 	<!--<node pkg="gazebo_ros" type="gzserver" args="$(find goal_manager)/world/sks.world" name="gazebo" required="true">

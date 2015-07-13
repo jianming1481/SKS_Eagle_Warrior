@@ -15,8 +15,8 @@
 void motionCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
     ROS_INFO("x[%lf], z[%lf]", msg->linear.x, msg->angular.z);
-    double motor_left  = msg->linear.x+30*msg->angular.z;
-    double motor_right = msg->linear.x-30*msg->angular.z;
+    double motor_left  = msg->linear.x+40*msg->angular.z;
+    double motor_right = msg->linear.x-40*msg->angular.z;
     ROS_INFO("motor_left[%lf], motor_right[%lf]", motor_left,motor_right);
 
     mcssl_send2motor(motor_left, motor_right);

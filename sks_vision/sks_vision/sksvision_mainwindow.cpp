@@ -1,16 +1,17 @@
 #include "sksvision_mainwindow.hpp"
 #include "sks_vision/ui_sksvision_mainwindow.h"
 #include "memory.h"
-#define THRESHOLD_MAX 35
-#define THRESHOLD_MIN 30
+#define THRESHOLD_MAX 68
+#define THRESHOLD_MIN 48
 #define BLACK_BLOCK 305000
 
 cv::VideoCapture cap(200);
 cv::Mat cvframe,cvGray;
 QImage frame(640,480,QImage::Format_RGB888);
 QImage org_frame(640,480,QImage::Format_RGB888);
-QImage test_frame(640,480,QImage::Format_RGB888);
+//QImage test_frame(640,480,QImage::Format_RGB888);
 int bw_sw;
+//int h_max;
 
 geometry_msgs::Vector3 vec3;
 
@@ -30,7 +31,7 @@ sksVision_MainWindow::sksVision_MainWindow(QWidget *parent):
     QMainWindow(parent),
     ui(new Ui::sksVision_MainWindow)
 {
-    pub_m = p.advertise<geometry_msgs::Vector3>("/sks_vision",100);
+    pub_m = p.advertise<geometry_msgs::Vector3>("/sks_vision",1);
     ui->setupUi(this);
     startTimer(1);
 }
@@ -42,8 +43,6 @@ sksVision_MainWindow::~sksVision_MainWindow()
 
 void sksVision_MainWindow::timerEvent(QTimerEvent *)
 {
-    ui->shownum_linear->setNum(ui->bar_linear->value());
-    ui->shownum_threshold->setNum(ui->bar_threshold->value());
     cap >> cvframe;
 
     //Gray
@@ -53,14 +52,13 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
     frame = MatToQImage(cvframe);
 //    frame = func_Gray(frame);
     frame = func_DeepGray(frame);
-    test_frame=frame;
 //==============================================================
     int blacknum=0;
-    for(int h=0;h<test_frame.height();h++){
-        for(int w=0;w<test_frame.width();w++){
-            if(qRed(test_frame.pixel(w,h))<=64&&qRed(test_frame.pixel(w,h))>=27) blacknum++;//60,20
-        }
-    }
+//    for(int h=0;h<frame.height();h+=2){
+//        for(int w=0;w<frame.width();w+=2){
+//            if(qRed(frame.pixel(w,h))<=64&&qRed(frame.pixel(w,h))>=27) blacknum++;//60,20
+//        }
+//    }
 //   std::cout<<blacknum<<std::endl;
 //===============================================================
     //Threshold_bar --> Threshold
@@ -76,8 +74,8 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
             gray = Average_Threshold(frame);
 //            gray = Qtsu(frame);
 
-            if(gray > THRESHOLD_MAX) gray = 24;
-            else if(gray < THRESHOLD_MIN) gray = 51;
+            if(gray > THRESHOLD_MAX) gray = THRESHOLD_MAX;
+            else if(gray < THRESHOLD_MIN) gray = THRESHOLD_MIN;
 
             ui->shownum_autoThreshold->setNum(gray);
         }
@@ -85,7 +83,7 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
     frame = func_Threshold(frame,gray);
 
     org_frame = frame;
-    for(int dot=2;dot < frame.height()-2;dot+=(frame.height()/ui->bar_linear->value())){
+    for(int dot=2;dot < frame.height()-2;dot+=(frame.height()/16)){
         for(int i=0;i<frame.width();i++){
             frame.setPixel(i,dot,QColor(0,255,0).rgb());
         }
@@ -93,7 +91,7 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
     //reset
     memset(Position,0,sizeof(Position)/sizeof(Position[0][0]));
     //Segmentation
-    for(int h=2;h < frame.height()-2;h+=(frame.height()/ui->bar_linear->value())){
+    for(int h=2;h < frame.height()-2;h+=(frame.height()/16)){
         bw_sw = compareBlackWhite(org_frame,h);
         if(bw_sw==0){
             Segmentation1(org_frame,&frame,h,255);
@@ -101,7 +99,7 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
             Segmentation1(org_frame,&frame,h,0);
         }
     }
-    if(push_p>1){
+    if(push_p>2){
         for(int i=0;i<push_p;i++){
             total_x += Position[0][i];
             total_y += Position[1][i];
@@ -120,7 +118,7 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
         ang=atan(final_w/final_h);
 
         ui->shownum_avgVector->setText(tr("<font color=blue>(%1 : %2)</font>").arg(final_w).arg(final_h));
-        ui->shownum_angular->setNum(ang*180/PI);
+        ui->shownum_angular->setNum(ang);
 
         frame.setPixel(vector_x-1,vector_y-1,QColor(0,0,255).rgb());
         frame.setPixel(vector_x-1,vector_y,QColor(0,0,255).rgb());
@@ -138,35 +136,37 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
         vec3.z = 999;
     }
     //reset
-    total_x =0,total_y =0,push_p =0;//*/
+    total_x =0,total_y =0,push_p =0;//,h_max=0;//*/
 
     //ShowImg
     ui->showlabel->setPixmap(QPixmap::fromImage(frame));
+
+    ui->shownum_linear->setNum(ui->bar_linear->value());
+    ui->shownum_threshold->setNum(ui->bar_threshold->value());
     //ROS
     pub_m.publish(vec3);
-    ros::Rate loop_rate(100);
+    ros::Rate loop_rate(1000);
     loop_rate.sleep();
 }
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 char compareBlackWhite(QImage img, int height){
-    int white_all=0,black_all=0;
-    for(int h=0;h<img.height();h+=2){
-        for(int w=0;w<img.width();w+=2){
-            if(qRed(img.pixel(w,h)==255)) white_all++;
-            else black_all++;
-        }
-    }
-
+//    int white_all=0,black_all=0;
+//    for(int h=0;h<img.height();h++){
+//        for(int w=0;w<img.width();w++){
+//            if(qRed(img.pixel(w,h)==255)) white_all++;
+//            else black_all++;
+//        }
+//    }
     int black=1,white=1;
     for(int w=0;w<img.width();w++){
         if(qRed(img.pixel(w,height))==255) white++;
         else    black++;
     }
     if((white==img.width()+1) || (black==img.width()+1)) return 3;
-    else if(white_all<black_all && white > black && white/black<=10) return 1;
-    else if(white_all<black_all && black > white && black/white<=10) return 0;
+    else if(white > black && white/black<=10) return 1;
+    else if(black > white && black/white<=10) return 0;//white_all<black_all &&
     else return 2;
 }
 void Segmentation1(QImage Inimg,QImage *Outimg,int h,int threshold){
@@ -224,6 +224,8 @@ void Segmentation1(QImage Inimg,QImage *Outimg,int h,int threshold){
     Outimg->setPixel(Xpos+1,h-1,QColor(255,0,0).rgb());
     Outimg->setPixel(Xpos+1,h+1,QColor(255,0,0).rgb());
     Outimg->setPixel(Xpos-1,h+1,QColor(255,0,0).rgb());
+    
+//    if(h_max<h) h_max=h;
 
     Position[0][push_p]=Xpos;
     Position[1][push_p]=h;

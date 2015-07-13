@@ -77,7 +77,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/base_link.STL</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/base_link.STL</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -96,7 +96,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/base_link.STL</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/base_link.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -133,7 +133,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/FL_wheel.STL</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/FL_wheel.STL</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -152,7 +152,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/FL_wheel.STL</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/FL_wheel.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -201,7 +201,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/FR_Wheel.STL</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/FR_Wheel.STL</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -220,7 +220,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/FR_Wheel.STL</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/FR_Wheel.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -269,7 +269,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/RL_Wheel.STL</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/RL_Wheel.STL</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -288,7 +288,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/RL_Wheel.STL</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/RL_Wheel.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -337,7 +337,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/RR_Wheel.STL</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/RR_Wheel.STL</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -356,7 +356,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/RR_Wheel.STL</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/RR_Wheel.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -403,7 +403,7 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>/home/iclab/catkin_dm/src/cogniteam_models/lizi_description/meshes/hokuyo.dae</uri>
+              <uri>/home/iclab/sks_ws/src/cogniteam_models/lizi_description/meshes/hokuyo.dae</uri>
             </mesh>
           </geometry>
         </visual>
