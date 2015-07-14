@@ -17,7 +17,7 @@
 #define swap_area_x   100.0
 #define swap_area_y   100.0
 #define forward_speed 20
-
+double last_speed_angular;
 
 //float posx,posy;
 geometry_msgs::Twist sp;
@@ -47,7 +47,7 @@ int main(int argc, char** argv){
 	goal.target_pose.header.frame_id = "map";
 	bool goal_one_send = false,goal_two_send = false,goal_one_cancel = false,goal_two_cancel = false,swap_detect = false;
 	
-	ros::Rate rate(30);
+	ros::Rate rate(1000);
 	
 	while(ros::ok()){
 		//if(posx>target_one_x+0.1&&posx<target_one_x-0.1&&
@@ -55,22 +55,30 @@ int main(int argc, char** argv){
 		//   posx>target_two_x+0.1&&posx<target_two_x-0.1&&
 	   	//   posy>target_two_y+0.1&&posy<target_two_y-0.1  )
 		
-		if(sp.angular.z<0.5&&sp.angular.z>-0.5){	
-			sp2.linear.x  = 20;
+		if(sp.angular.z<0.15&&sp.angular.z>-0.15){	
+			sp2.linear.x  = 80;
 			sp2.angular.z =	sp.angular.z;				
 			speed_com.publish(sp2);
+		}else if((sp.angular.z>0.1&&sp.angular.z<0.25)||(sp.angular.z<-0.1&&sp.angular.z>-0.25)){
+			sp2.linear.x  = 35;
+			sp2.angular.z =	sp.angular.z;				
+			speed_com.publish(sp2);
+		}else if((sp.angular.z>0.25&&sp.angular.z<0.5)||(sp.angular.z<-0.25&&sp.angular.z>-0.5)){
+			sp2.linear.x  = 25;
+			sp2.angular.z =	sp.angular.z;				
+			speed_com.publish(sp2);
+		}else if(sp.angular.z==999){		 
+			sp2.linear.x  = 10;
+			sp2.angular.z = last_speed_angular;
+			speed_com.publish(sp2);
+			
 		}else{
-			if(sp.angular.z==999){		 
-				sp2.linear.x  = 0;
-				sp2.angular.z = 0;
-				speed_com.publish(sp2);
-			}else{
-				sp2.linear.x  = 0;
-				sp2.angular.z =	sp.angular.z;				
-				speed_com.publish(sp2);	
-			}
+			sp2.linear.x  = 0;
+			sp2.angular.z =	sp.angular.z;				
+			speed_com.publish(sp2);	
 		}
-
+		if(sp.angular.z != 999)last_speed_angular = sp.angular.z;
+				
 		if(cu_pos.pose.position.x<target_one_x+0.2&&cu_pos.pose.position.x>target_one_x-0.2&&
 	   	   cu_pos.pose.position.y<target_one_y+0.2&&cu_pos.pose.position.y>target_one_y-0.2&& !goal_one_send){
 			ROS_INFO("arrived first target, sending first goal...");

@@ -26,6 +26,7 @@ public:
     ~sksVision_MainWindow();
 
     void Showimg(cv::Mat frame);
+    int sensorPoint(QImage oframe, QImage *frame, int height);
 
 protected:
     void timerEvent(QTimerEvent *e);
