@@ -9,14 +9,19 @@
 
 #include "MotorControl.h"
 
+
 //====================//
 //ROS motion callback //
 //====================//
 void motionCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
     ROS_INFO("x[%lf], z[%lf]", msg->linear.x, msg->angular.z);
-    double motor_left  = msg->linear.x+30*msg->angular.z;
-    double motor_right = msg->linear.x-30*msg->angular.z;
+    double motor_left  = 100*(msg->linear.x)+30*msg->angular.z;
+    double motor_right = 100*(msg->linear.x)-30*msg->angular.z;
+    if(abs(motor_left)>=127)
+	motor_left = 127;
+    if(abs(motor_right)>=127)
+	motor_right = 127;
     ROS_INFO("motor_left[%lf], motor_right[%lf]", motor_left,motor_right);
 
     mcssl_send2motor(motor_left, motor_right);
