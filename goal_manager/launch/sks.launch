@@ -3,10 +3,8 @@
 <launch>
 	<arg name="geotiff_map_file_path" default="$(find hector_geotiff)/maps"/>
 	<node pkg="sks_vision"   name="sks_vision"  type="sks_vision" respawn="true"/>
-
-	<node pkg="hokuyo_node"  name="hokuyo_node" type="hokuyo_node" output="screen"/>
-
-	<node pkg="goal_manager" name="goal_manager" type="goal_manager"/>
+	<node pkg="sks_robot" name="motion" type="motion" />
+	<node pkg="hokuyo_node"  name="hokuyo_node" type="hokuyo_node" />
 
 	<!--for simulating in gazebo simulator (using $type="gzserver" to simulate without gazebosimulator)-->
 	<!--<node pkg="gazebo_ros" type="gzserver" args="$(find goal_manager)/world/sks.world" name="gazebo" required="true">
@@ -20,11 +18,13 @@
     	  args="-d $(find goal_manager)/launch/mapping_demo.rviz"/>
 	
 	<include file="$(find goal_manager)/launch/mapping_default.launch"/>
+
+	<include file="$(find goal_manager)/launch/move_base.launch"/>
 	<!--save map by publishing "savegeotiff" to /syscommand-->
 	<include file="$(find hector_geotiff)/launch/geotiff_mapper.launch">
 	  <arg name="trajectory_source_frame_name" value="scanmatcher_frame"/>
 	  <arg name="map_file_path" value="$(arg geotiff_map_file_path)"/> 
 	</include>
-
-	<node pkg="sks_robot" name="motion" type="motion" respawn="true"/>
+	<node pkg="goal_manager" name="goal_manager" type="goal_manager" output="screen"/>
+	
 </launch>
