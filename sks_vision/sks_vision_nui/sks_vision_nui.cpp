@@ -17,7 +17,7 @@
 #define THRESHOLD_MIN 30
 #define BLACK_BLOCK 305000
 #define Linear_Num 16
-#define ROBOT_CENTER 367
+#define ROBOT_CENTER 287
 
 using namespace std;
 
@@ -147,6 +147,7 @@ int main(int argc, char** argv)
                 }
                 final_w = vector_x - (ROBOT_CENTER);
                 final_h = frame.height() - 1 - vector_y;
+
 
                 int sensor_x,sensor_y=100;
                 sensor_x = sensorPoint(org_frame,&frame,sensor_y);
