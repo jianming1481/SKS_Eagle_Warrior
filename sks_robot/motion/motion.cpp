@@ -9,6 +9,7 @@
 
 #include "MotorControl.h"
 
+
 //====================//
 //ROS motion callback //
 //====================//
@@ -19,6 +20,7 @@ void motionCallback(const geometry_msgs::Twist::ConstPtr& msg)
     ROS_INFO("x[%lf], z[%lf]", linear_x, msg->angular.z);
     double motor_left  = linear_x+speed_const*msg->angular.z;
     double motor_right = linear_x-speed_const*msg->angular.z;
+
     if(motor_left >= 150 || motor_right >= 150){
 	motor_left = linear_x-40+speed_const*msg->angular.z;
         motor_right = linear_x-40-speed_const*msg->angular.z;
