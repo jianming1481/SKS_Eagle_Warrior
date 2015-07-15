@@ -10,6 +10,7 @@
 #include "func.hpp"
 #include "qsks_vision.hpp"
 #include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/PoseStamped.h>
 
 #define PI 3.14159
 
@@ -27,11 +28,13 @@ public:
 
     void Showimg(cv::Mat frame);
     int sensorPoint(QImage oframe, QImage *frame, int height);
+    void current_pos(const geometry_msgs::PoseStamped::ConstPtr& pos);
 
 protected:
     void timerEvent(QTimerEvent *e);
     ros::Publisher pub_m;
     ros::NodeHandle p;
+    ros::Subscriber position_sub;
 
 private Q_SLOTS:
     void on_Get_para_clicked();

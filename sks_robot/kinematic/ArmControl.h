@@ -50,7 +50,7 @@ static void mcssl_callback(int id, uint8_t *buf, int length)
 //====================//
 int mcssl_init()
 {
-    char *devs="/dev/ttyACM0";
+    char *devs="/dev/ttyACM1";
 
      cssl_start();
 

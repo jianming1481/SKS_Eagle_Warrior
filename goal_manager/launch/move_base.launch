@@ -2,7 +2,7 @@
 
 <launch>
   <master auto="start"/>
-  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" >
     <!--<param name="recovery_behavior_enabled" value="false"/>-->
     <rosparam file="$(find goal_manager)/param/costmap_common_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find goal_manager)/param/costmap_common_params.yaml" command="load" ns="local_costmap"/>
