@@ -2,10 +2,13 @@
 
 <launch>
 	<arg name="geotiff_map_file_path" default="$(find hector_geotiff)/maps"/>
+
+
 	<!--<node pkg="sks_vision"   name="sks_vision"  type="sks_vision" respawn="true"/> -->
 	<node pkg="sks_vision"   name="sks_vision_nui"  type="sks_vision_nui" />
-	<node pkg="sks_robot" name="motion" type="motion" />
+	
 	<node pkg="hokuyo_node"  name="hokuyo_node" type="hokuyo_node" />
+
 
 	<!--for simulating in gazebo simulator (using $type="gzserver" to simulate without gazebosimulator)-->
 	<!--<node pkg="gazebo_ros" type="gzserver" args="$(find goal_manager)/world/sks.world" name="gazebo" required="true">
@@ -26,6 +29,8 @@
 	  <arg name="trajectory_source_frame_name" value="scanmatcher_frame"/>
 	  <arg name="map_file_path" value="$(arg geotiff_map_file_path)"/> 
 	</include>
+
 	<node pkg="goal_manager" name="goal_manager" type="goal_manager" output="screen"/>
 	
+	<node pkg="sks_robot" name="motion" type="motion" />
 </launch>
