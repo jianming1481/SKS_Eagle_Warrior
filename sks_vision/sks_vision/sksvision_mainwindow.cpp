@@ -1,9 +1,11 @@
 #include "sksvision_mainwindow.hpp"
 #include "sks_vision/ui_sksvision_mainwindow.h"
 #include "memory.h"
-#define THRESHOLD_MAX 68
-#define THRESHOLD_MIN 48
+#include <geometry_msgs/PoseStamped.h>
+//#define THRESHOLD_MAX 37
+//#define THRESHOLD_MIN 35
 #define BLACK_BLOCK 305000
+#define ROBOT_CENTER 367
 
 cv::VideoCapture cap(200);
 cv::Mat cvframe,cvGray;
@@ -14,6 +16,7 @@ int bw_sw;
 //int h_max;
 
 geometry_msgs::Vector3 vec3;
+geometry_msgs::PoseStamped cu_pos;
 
 char compareBlackWhite(QImage img, int height);
 void Segmentation1(QImage Inimg, QImage *Outimg, int h, int threshold);
@@ -28,11 +31,17 @@ int total_x,total_y;
 float final_w,final_h,ang;
 int total_black=0,total_white=0;
 
+void sksVision_MainWindow::current_pos(const geometry_msgs::PoseStamped::ConstPtr& pos){
+    cu_pos.pose.position.x = pos->pose.position.x;
+    cu_pos.pose.position.y = pos->pose.position.y;
+}
+
 sksVision_MainWindow::sksVision_MainWindow(QWidget *parent):
     QMainWindow(parent),
     ui(new Ui::sksVision_MainWindow)
 {
     pub_m = p.advertise<geometry_msgs::Vector3>("/sks_vision",1);
+//    position_sub= p.subscribe("/slam_out_pose",10,current_pos);
     ui->setupUi(this);
     startTimer(1);
 }
@@ -74,9 +83,11 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
          }else{
             gray = Average_Threshold(frame);
 //            gray = Qtsu(frame);
-
-            if(gray > THRESHOLD_MAX) gray = THRESHOLD_MAX;
-            else if(gray < THRESHOLD_MIN) gray = THRESHOLD_MIN;
+//            if(cu_pos.pose.position.x<-1.07+0.2&&cu_pos.pose.position.x>-3.14-0.2&&
+//               cu_pos.pose.position.y<3.87+0.2&&cu_pos.pose.position.y>1.13-0.2/*&& !goal_one_send*/)
+            if(gray>40)
+                 gray = 27;
+            else gray = 55;
 
             ui->shownum_autoThreshold->setNum(gray);
         }
@@ -108,27 +119,32 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
         double vector_x=total_x/push_p;
         double vector_y=total_y/push_p;
         double vector_h=frame.height()-1-vector_y;
-        double vector_w=(frame.width()/2-1-vector_x)/vector_h;
+        double vector_w=(ROBOT_CENTER-1-vector_x)/vector_h;
 
         for(int i=0;i<vector_h;i++){
-            frame.setPixel(frame.width()/2-1-vector_w*i,frame.height()-1-i,QColor(0,0,255).rgb());
+            frame.setPixel(ROBOT_CENTER-1-vector_w*i,frame.height()-1-i,QColor(0,0,255).rgb());
         }
-//        final_w = vector_x - (frame.width()/2);
-//        final_h = frame.height() - 1 - vector_y;
+
+        final_w = vector_x - ROBOT_CENTER;
+
+        final_h = frame.height() - 1 - vector_y;
 
         int sensor_x,sensor_y=100;
         sensor_x = sensorPoint(org_frame,&frame,sensor_y);
         final_w += sensor_x;
-        final_h += sensor_y;
+        if(sensor_x!=0) final_h += sensor_y;
         sensor_y=380;
         sensor_x = sensorPoint(org_frame,&frame,sensor_y);
         final_w += sensor_x;
-        final_h += sensor_y;
+        if(sensor_x!=0) final_h += sensor_y;
+
+//        std::cout<<sensor_x<<std::endl;
+
 
         ang=atan(final_w/final_h);
 
         ui->shownum_avgVector->setText(tr("<font color=blue>(%1 : %2)</font>").arg(final_w).arg(final_h));
-        ui->shownum_angular->setNum(ang);
+        ui->shownum_angular->setNum(ang/**180/3.14*/);
 
         frame.setPixel(vector_x-1,vector_y-1,QColor(0,0,255).rgb());
         frame.setPixel(vector_x-1,vector_y,QColor(0,0,255).rgb());
@@ -267,28 +283,42 @@ int sksVision_MainWindow::sensorPoint(QImage oframe,QImage *frame,int height){
     for(int i=-3;i<=3;i++){
         if(i==0);
         else{
-            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(0,0,255).rgb());
-            frame->setPixel((frame->width()*0.5)+(i*width_band)+1,height+0,QColor(0,0,255).rgb());
-            frame->setPixel((frame->width()*0.5)+(i*width_band)-1,height+0,QColor(0,0,255).rgb());
-            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+1,QColor(0,0,255).rgb());
-            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height-1,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+1,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)-1,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+1,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height-1,QColor(0,0,255).rgb());
         }
     }
     for(int i=-3;i<=3;i++){
         if(i==0);
         else{
             if(total_white > total_black){
-                if(qRed(oframe.pixel((oframe.width()*0.5)+(i*width_band),height)) == 0){
-                    avg_x += i*width_band*i;
-                    frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
+
+                if(qRed(oframe.pixel((ROBOT_CENTER)+(i*width_band),height)) == 0){
+                    avg_x += width_band*i;
+                    frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
                 }
             }else if(total_black > total_white){
-                if(qRed(oframe.pixel((oframe.width()*0.5)+(i*width_band),height)) == 255){
-                    avg_x += i*width_band*i;
-                    frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
+                if(qRed(oframe.pixel((ROBOT_CENTER)+(i*width_band),height)) == 255){
+                    avg_x += width_band*i;
+                    frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
+
                 }
             }
         }
     }
     return avg_x;
+}
+
+void sksVision_MainWindow::on_Get_para_clicked()
+{
+    if(ui->checkbox_threshold->isChecked()){
+        auto_check = 1;
+    }else{
+        auto_check = 0;
+    }
+    p.setParam("/SKS/vision/auto_gray",auto_check);
+    p.setParam("/SKS/vision/gray_sum",ui->bar_threshold->value());
+    p.setParam("/SKS/vision/linearr",ui->bar_linear->value());
 }

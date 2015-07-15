@@ -36,8 +36,6 @@ TeleopTurtle::TeleopTurtle():
 
   vel_pub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
   arm_pub_ = nh_.advertise<std_msgs::Char>("/cmd_pos",1);
-
-
   joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &TeleopTurtle::joyCallback, this);
 
 }
@@ -108,14 +106,15 @@ void TeleopTurtle::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
   double grip_open = joy->axes[5];
   double sound = joy->buttons[7];
   int ls_up=0,ls_down=0,ls_r_left=0,ls_r_right=0,ls_grip_close=0,ls_grip_open=0;
-  
-  if(joy->axes[2] == -1)grip_close=1;
-  else grip_close=0;
-  if(joy->axes[5] == -1)grip_open=1;
-  else grip_open=0;
+
   if(sound ==1 ){
       sc.playWave("/home/iclab/sks_ws/src/audioclip.wav");
   }
+  if(joy->axes[2] == -1) grip_close=1;
+  else grip_close=0;
+  if(joy->axes[5] == -1) grip_open=1;
+  else grip_open=0;
+
   if(up==1 && up!=ls_up){                    //button Y ==1 -> up ->publish(w)
     arm.data='w';
     arm_pub_.publish(arm);
