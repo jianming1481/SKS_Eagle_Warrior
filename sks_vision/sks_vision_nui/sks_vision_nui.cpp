@@ -105,9 +105,9 @@ int main(int argc, char** argv)
     //            gray = Qtsu(frame);
                 if(cu_pos.pose.position.x<-1.07+0.2&&cu_pos.pose.position.x>-3.14-0.2&&
                            cu_pos.pose.position.y<3.87+0.2&&cu_pos.pose.position.y>1.13-0.2/*&& !goal_one_send*/){
-                    gray=27;
+                    gray=24;
                 }else{
-                    gray=51;
+                    gray=58;
                 }
 //                    if(gray > THRESHOLD_MAX) gray = THRESHOLD_MAX;
 //                    else if(gray < THRESHOLD_MIN) gray = THRESHOLD_MIN;

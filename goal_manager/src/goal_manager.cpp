@@ -162,7 +162,7 @@ int main(int argc, char** argv){
 			
 			}else{
 				sp2.linear.x  = 0;
-				sp2.angular.z =	sp.angular.z;				
+				sp2.angular.z =	sp.angular.z * 1.2;				
 				speed_com.publish(sp2);	
 			}
 			if(sp.angular.z != 999)last_speed_angular = sp.angular.z;
