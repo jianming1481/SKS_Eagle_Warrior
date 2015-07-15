@@ -17,8 +17,11 @@
 #define THRESHOLD_MIN 30
 #define BLACK_BLOCK 305000
 #define Linear_Num 16
+#define ROBOT_CENTER 367
 
 using namespace std;
+
+cv::VideoCapture cap(200);
 
 cv::Mat cvframe,cvGray;
 QImage frame(640,480,QImage::Format_RGB888);
@@ -44,7 +47,7 @@ sensor_msgs::ImagePtr msg;
 geometry_msgs::Vector3 vec3;
 geometry_msgs::PoseStamped cu_pos;
 void current_pos(const geometry_msgs::PoseStamped::ConstPtr& pos){
-    ROS_INFO("%f,%f",cu_pos.pose.position.x,cu_pos.pose.position.y);
+//    ROS_INFO("%f,%f",cu_pos.pose.position.x,cu_pos.pose.position.y);
     cu_pos.pose.position.x = pos->pose.position.x;
     cu_pos.pose.position.y = pos->pose.position.y;
 }
@@ -53,11 +56,6 @@ void current_pos(const geometry_msgs::PoseStamped::ConstPtr& pos){
 int para_auto_gray,para_threshold_num;
 
 static const char WINDOW[] = "Image window";
-
-void chatterCallback(const std_msgs::String::ConstPtr& msg)
-{
-  ROS_INFO("I heard: [%s]", msg->data.c_str());
-}
 
 int main(int argc, char** argv)
 {
@@ -68,17 +66,16 @@ int main(int argc, char** argv)
     ros::Rate loop_rate(1000);
 //	image_transport::ImageTransport it(nh);
 
-    ros::Publisher pub_m = nh.advertise<geometry_msgs::Vector3>("/sks_vision",1);;
-    ros::Subscriber sub = nh.subscribe("/chatter", 1000, chatterCallback);
+    ros::Publisher pub_m = nh.advertise<geometry_msgs::Vector3>("/sks_vision",1);
     ros::Subscriber position_sub = nh.subscribe("/slam_out_pose",10,current_pos);
 
     nh.getParam("/SKS/vision/auto_gray",para_auto_gray);
     nh.getParam("/SKS/vision/gray_sum",para_threshold_num);
 
-    cv::VideoCapture cap(200);
-    if(!cap.isOpened()){
-        std::cout<<"camera isnt opened"<<std::endl;
-        return 1;
+    while(1){
+        cap.open(200);
+        if(cap.isOpened()) break;
+        else std::cout<<"camera isnt opened"<<std::endl;
     }
     while (nh.ok()){
         cap >> cvframe;
@@ -143,26 +140,26 @@ int main(int argc, char** argv)
                 double vector_x=total_x/push_p;
                 double vector_y=total_y/push_p;
                 double vector_h=frame.height()-1-vector_y;
-                double vector_w=(frame.width()/2-1-vector_x)/vector_h;
+                double vector_w=(ROBOT_CENTER-1-vector_x)/vector_h;
 
                 for(int i=0;i<vector_h;i++){
-                    frame.setPixel(frame.width()/2-1-vector_w*i,frame.height()-1-i,QColor(0,0,255).rgb());
+                    frame.setPixel(ROBOT_CENTER-1-vector_w*i,frame.height()-1-i,QColor(0,0,255).rgb());
                 }
-                final_w = vector_x - (frame.width()/2);
+                final_w = vector_x - (ROBOT_CENTER);
                 final_h = frame.height() - 1 - vector_y;
 
-//                int sensor_x,sensor_y=100;
-//                sensor_x = sensorPoint(org_frame,&frame,sensor_y);
-//                final_w += sensor_x;
-//                sensor_y=379;
+                int sensor_x,sensor_y=100;
+                sensor_x = sensorPoint(org_frame,&frame,sensor_y);
+                final_w += sensor_x;
+                sensor_y=379;
+                final_h += sensor_y;
 //                if(sensor_x!=0) final_h += sensor_y;
-//                std::cout<<sensor_x<<std::endl<<sensor_y<<std::endl;
-//                sensor_y=380;
-//                sensor_x = sensorPoint(org_frame,&frame,sensor_y);
-//                final_w += sensor_x;
-//                sensor_y=99;
+                sensor_y=380;
+                sensor_x = sensorPoint(org_frame,&frame,sensor_y);
+                final_w += sensor_x;
+                sensor_y=99;
+                final_h += sensor_y;
 //                if(sensor_x!=0) final_h += sensor_y;
-//                std::cout<<sensor_x<<std::endl<<sensor_y<<std::endl;
 
                 ang=atan(final_w/final_h);
 
@@ -185,8 +182,8 @@ int main(int argc, char** argv)
             total_black=0;total_white=0;
 
             cvGray = QImageToCvMat(frame);
-            cv::imshow(WINDOW,cvGray);
-            cv::waitKey(1);
+//            cv::imshow(WINDOW,cvGray);
+//            cv::waitKey(1);
 
             //ROS
             pub_m.publish(vec3);
@@ -283,37 +280,39 @@ void Segmentation1(QImage Inimg,QImage *Outimg,int h,int threshold){
     Position[1][push_p]=h;
     push_p++;
 }
-//int sensorPoint(QImage oframe,QImage *frame,int height){
-//    int width_band=90;
-//    int avg_x=0,avg_y=0;
-//    for(int i=-3;i<=3;i++){
-//        if(i==0);
-//        else{
-//            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(0,0,255).rgb());
-//            frame->setPixel((frame->width()*0.5)+(i*width_band)+1,height+0,QColor(0,0,255).rgb());
-//            frame->setPixel((frame->width()*0.5)+(i*width_band)-1,height+0,QColor(0,0,255).rgb());
-//            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+1,QColor(0,0,255).rgb());
-//            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height-1,QColor(0,0,255).rgb());
-//        }
-//    }
-//    for(int i=-3;i<=3;i++){
-//        if(i==0);
-//        else{
-//            if(total_white > total_black){
-//                if(qRed(oframe.pixel((oframe.width()*0.5)+(i*width_band),height)) == 0){
-//                    avg_x += width_band*i;
-//                    frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
-//                }
-//            }else if(total_black > total_white){
-//                if(qRed(oframe.pixel((oframe.width()*0.5)+(i*width_band),height)) == 255){
-//                    avg_x += width_band*i;
-//                    frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
-//                }
-//            }
-//        }
-//    }
-//    return avg_x;
-//}
+int sensorPoint(QImage oframe,QImage *frame,int height){
+    int width_band=90;
+    int avg_x=0,avg_y=0;
+    for(int i=-3;i<=3;i++){
+        if(i==0);
+        else{
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+1,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)-1,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+1,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height-1,QColor(0,0,255).rgb());
+        }
+    }
+    for(int i=-3;i<=3;i++){
+        if(i==0);
+        else{
+            if(total_white > total_black){
+
+                if(qRed(oframe.pixel((ROBOT_CENTER)+(i*width_band),height)) == 0){
+                    avg_x += width_band*i;
+                    frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
+                }
+            }else if(total_black > total_white){
+                if(qRed(oframe.pixel((ROBOT_CENTER)+(i*width_band),height)) == 255){
+                    avg_x += width_band*i;
+                    frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
+
+                }
+            }
+        }
+    }
+    return avg_x;
+}
 //*/
 /*
 #include <ros/ros.h>
@@ -504,25 +503,25 @@ int sensorPoint(QImage oframe,QImage *frame,int height){
     for(int i=-3;i<=3;i++){
         if(i==0);
         else{
-            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(0,0,255).rgb());
-            frame->setPixel((frame->width()*0.5)+(i*width_band)+1,height+0,QColor(0,0,255).rgb());
-            frame->setPixel((frame->width()*0.5)+(i*width_band)-1,height+0,QColor(0,0,255).rgb());
-            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+1,QColor(0,0,255).rgb());
-            frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height-1,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+1,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)-1,height+0,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+1,QColor(0,0,255).rgb());
+            frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height-1,QColor(0,0,255).rgb());
         }
     }
     for(int i=-3;i<=3;i++){
         if(i==0);
         else{
             if(total_white > total_black){
-                if(qRed(oframe.pixel((oframe.width()*0.5)+(i*width_band),height)) == 0){
+                if(qRed(oframe.pixel((ROBOT_CENTER)+(i*width_band),height)) == 0){
                     avg_x += i*width_band*i;
-                    frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
+                    frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
                 }
             }else if(total_black > total_white){
-                if(qRed(oframe.pixel((oframe.width()*0.5)+(i*width_band),height)) == 255){
+                if(qRed(oframe.pixel((ROBOT_CENTER)+(i*width_band),height)) == 255){
                     avg_x += i*width_band*i;
-                    frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
+                    frame->setPixel((ROBOT_CENTER)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
                 }
             }
         }

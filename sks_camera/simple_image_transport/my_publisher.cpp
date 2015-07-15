@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#define COUNTER 8
+#define COUNTER 1
 #define COMPRESSED_WIDTH 160
 #define COMPRESSED_HEIGHT 120
 
@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     sprintf(node_name,"image_publisher%d",random_num);
     ros::init(argc, argv, node_name);
     ros::NodeHandle nh;
-    ros::Rate loop_rate(30);
+    ros::Rate loop_rate(25);
     ros::spinOnce();
     image_transport::ImageTransport it(nh);
 

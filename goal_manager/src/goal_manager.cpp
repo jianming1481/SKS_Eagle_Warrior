@@ -13,7 +13,7 @@
 #define goal_one_x    0.51
 #define goal_one_y    2.47
 #define cancel_one_x  0.51
-#define cancel_one_y  2.67
+#define cancel_one_y  2.27
 #define goal_two_x    -1.5
 #define goal_two_y    5.11
 #define cancel_two_x  -1.3
@@ -55,7 +55,7 @@ int main(int argc, char** argv){
 	
 	while(ros::ok()){
 		if(cu_pos.pose.position.x<0.5&&cu_pos.pose.position.y<0.5&& !startup){
-			ros::Duration(2.0).sleep();
+			//ros::Duration(0.5).sleep();
 			ROS_INFO("startup");
 			sp2.linear.x  = 0.32;
 			sp2.angular.z =	-0.4;			
@@ -63,7 +63,7 @@ int main(int argc, char** argv){
 			ros::Duration(1.0).sleep();		
 			startup=true;
 		}
-		if( cu_pos.pose.position.x>-1.3 && cu_pos.pose.position.x<1.21 &&
+		if( cu_pos.pose.position.x>-1.3 && cu_pos.pose.position.x<1.4 &&
 	   	    cu_pos.pose.position.y>2.47 && cu_pos.pose.position.y<5.21){
 			if((cu_pos.pose.position.x<target_one_x+0.2&&cu_pos.pose.position.x>target_one_x-0.2)&&
 	   		   (cu_pos.pose.position.y<target_one_y+0.2&&cu_pos.pose.position.y>target_one_y-0.2)&& !goal_one_send){

@@ -2,7 +2,8 @@
 
 <launch>
 	<arg name="geotiff_map_file_path" default="$(find hector_geotiff)/maps"/>
-	<node pkg="sks_vision"   name="sks_vision"  type="sks_vision" respawn="true"/>
+	<!--<node pkg="sks_vision"   name="sks_vision"  type="sks_vision" respawn="true"/> -->
+	<node pkg="sks_vision"   name="sks_vision_nui"  type="sks_vision_nui" />
 	<node pkg="sks_robot" name="motion" type="motion" />
 	<node pkg="hokuyo_node"  name="hokuyo_node" type="hokuyo_node" />
 
@@ -14,8 +15,8 @@
 
 	<node pkg="hector_map_server" name="hector_map_server" type="hector_map_server"/>		
 	
-	<node pkg="rviz" type="rviz" name="rviz" 
-    	  args="-d $(find goal_manager)/launch/mapping_demo.rviz"/>
+	<!--<node pkg="rviz" type="rviz" name="rviz" 
+    	  args="-d $(find goal_manager)/launch/mapping_demo.rviz"/>-->
 	
 	<include file="$(find goal_manager)/launch/mapping_default.launch"/>
 
