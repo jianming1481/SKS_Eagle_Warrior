@@ -3,6 +3,8 @@
 #include <sensor_msgs/Joy.h>
 #include <std_msgs/Char.h>
 #include <math.h>
+#include "std_msgs/String.h"
+#include <sound_play.h>
 class TeleopTurtle
 {
 public:
@@ -18,7 +20,7 @@ private:
   ros::Publisher vel_pub_;
   ros::Publisher arm_pub_;
   ros::Subscriber joy_sub_;
-  
+  sound_play::SoundClient sc;
 };
 
 
@@ -33,7 +35,7 @@ TeleopTurtle::TeleopTurtle():
   nh_.param("scale_linear", l_scale_, l_scale_);
 
   vel_pub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
-  arm_pub_ = nh_.advertise<std_msgs::Char>("/arm",1);
+  arm_pub_ = nh_.advertise<std_msgs::Char>("/cmd_pos",1);
 
 
   joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &TeleopTurtle::joyCallback, this);
@@ -104,31 +106,43 @@ void TeleopTurtle::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
   double down = joy->buttons[0];
   double grip_close = joy->axes[2];
   double grip_open = joy->axes[5];
-  if(joy->axes[2] != 1)grip_close=1;
+  double sound = joy->buttons[7];
+  int ls_up=0,ls_down=0,ls_r_left=0,ls_r_right=0,ls_grip_close=0,ls_grip_open=0;
+  
+  if(joy->axes[2] == -1)grip_close=1;
   else grip_close=0;
-  if(joy->axes[5] != 1)grip_open=1;
+  if(joy->axes[5] == -1)grip_open=1;
   else grip_open=0;
-  if(up==1 && up!=up){                    //button Y ==1 -> up ->publish(w)
+  if(sound ==1 ){
+      sc.playWave("/home/iclab/sks_ws/src/audioclip.wav");
+  }
+  if(up==1 && up!=ls_up){                    //button Y ==1 -> up ->publish(w)
     arm.data='w';
     arm_pub_.publish(arm);
-  }else if(down==1 && down!=down){		//button A == 1 -> down ->->publish(s)
+  }else if(down==1 && down!=ls_down){		//button A == 1 -> down ->->publish(s)
     arm.data='s';
     arm_pub_.publish(arm);
-  }else if(r_left==1 && r_left!=r_left){      	//button X ==1 ->rotate left ->->publish(a)
+  }else if(r_left==1 && r_left!=ls_r_left){      	//button X ==1 ->rotate left ->->publish(a)
     arm.data='a';
     arm_pub_.publish(arm);
-  }else if(r_right==1 && r_right!=r_right){    	//button B ==1 ->rotate right ->->publish(d)
+  }else if(r_right==1 && r_right!=ls_r_right){    	//button B ==1 ->rotate right ->->publish(d)
     arm.data='d';
     arm_pub_.publish(arm);
-  }else if(grip_close==1 && grip_close!=grip_close){	//LT !=1 ->grip close ->->publish(o)
+  }else if(grip_close==1 && (grip_close!=ls_grip_close)){	//LT !=1 ->grip close ->->publish(o)
     arm.data='o';
     arm_pub_.publish(arm);
-  }else if(grip_open==1 && grip_open!=grip_open){	//RT !=1 ->grip open ->->publish(p)
+  }else if(grip_open==1 && (grip_open!=ls_grip_open)){	//RT !=1 ->grip open ->->publish(p)
     arm.data='p';
     arm_pub_.publish(arm);
   }else{
     arm.data='0';
   }
+  ls_up=up;
+  ls_down=down;
+  ls_r_left=r_left;
+  ls_r_right=r_right;
+  ls_grip_close=grip_close;
+  ls_grip_open=grip_open;
 }
 
 int main(int argc, char** argv)

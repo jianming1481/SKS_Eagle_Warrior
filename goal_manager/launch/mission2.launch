@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<launch>
+	
+	<node pkg="hokuyo_node"  name="hokuyo_node" type="hokuyo_node" />
+	<node pkg="learning_joy"  name="turtle_teleop_joy" type="turtle_teleop_joy" />
+	<node pkg="sks_camera"  name="my_publisher1" type="my_publisher" args="200 /camera/200"/>
+	<!--<node pkg="sks_camera"  name="my_publisher2" type="my_publisher" args="201 /camera/201"/>-->
+	<node pkg="web_video_server"  name="web_video_server" type="web_video_server" />
+	<node pkg="sks_robot"  name="kinematic" type="kinematic" />
+	<!--<node pkg="sound_play"  name="soundplay_node" type="soundplay_node.py" />-->
+	<include file="$(find sound_play)/soundplay_node.launch"/>
+	<include file="$(find goal_manager)/launch/mapping_default.launch"/>
+	<node pkg="sks_robot" name="motion" type="motion" />
+	
+</launch>
