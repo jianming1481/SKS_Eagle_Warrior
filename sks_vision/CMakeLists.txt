@@ -45,6 +45,7 @@ catkin_package(CATKIN_DEPENDS message_runtime std_msgs roscpp
 foreach(subdir
     common
     sks_vision
+    sks_vision_nui#
     )
   #install(DIRECTORY ${subdir} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qt_tutorials)
   add_subdirectory(${subdir})

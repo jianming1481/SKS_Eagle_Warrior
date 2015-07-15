@@ -113,17 +113,17 @@ void sksVision_MainWindow::timerEvent(QTimerEvent *)
         for(int i=0;i<vector_h;i++){
             frame.setPixel(frame.width()/2-1-vector_w*i,frame.height()-1-i,QColor(0,0,255).rgb());
         }
-//        final_w = vector_x - (frame.width()/2);
-//        final_h = frame.height() - 1 - vector_y;
+        final_w = vector_x - (frame.width()/2);
+        final_h = frame.height() - 1 - vector_y;
 
         int sensor_x,sensor_y=100;
         sensor_x = sensorPoint(org_frame,&frame,sensor_y);
         final_w += sensor_x;
-        final_h += sensor_y;
+        if(sensor_x!=0) final_h += sensor_y;
         sensor_y=380;
         sensor_x = sensorPoint(org_frame,&frame,sensor_y);
         final_w += sensor_x;
-        final_h += sensor_y;
+        if(sensor_x!=0) final_h += sensor_y;
 
         ang=atan(final_w/final_h);
 
@@ -279,16 +279,28 @@ int sksVision_MainWindow::sensorPoint(QImage oframe,QImage *frame,int height){
         else{
             if(total_white > total_black){
                 if(qRed(oframe.pixel((oframe.width()*0.5)+(i*width_band),height)) == 0){
-                    avg_x += i*width_band*i;
+                    avg_x += width_band*i;
                     frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
                 }
             }else if(total_black > total_white){
                 if(qRed(oframe.pixel((oframe.width()*0.5)+(i*width_band),height)) == 255){
-                    avg_x += i*width_band*i;
+                    avg_x += width_band*i;
                     frame->setPixel((frame->width()*0.5)+(i*width_band)+0,height+0,QColor(255,255,0).rgb());
                 }
             }
         }
     }
     return avg_x;
+}
+
+void sksVision_MainWindow::on_Get_para_clicked()
+{
+    if(ui->checkbox_threshold->isChecked()){
+        auto_check = 1;
+    }else{
+        auto_check = 0;
+    }
+    p.setParam("/SKS/vision/auto_gray",auto_check);
+    p.setParam("/SKS/vision/gray_sum",ui->bar_threshold->value());
+    p.setParam("/SKS/vision/linearr",ui->bar_linear->value());
 }

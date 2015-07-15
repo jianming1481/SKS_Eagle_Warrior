@@ -33,8 +33,13 @@ protected:
     ros::Publisher pub_m;
     ros::NodeHandle p;
 
+private Q_SLOTS:
+    void on_Get_para_clicked();
+
+
 private:
     Ui::sksVision_MainWindow *ui;
+    int auto_check;
 };
 
 #endif // SKSVISION_MAINWINDOW_H

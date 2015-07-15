@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>sksVision_MainWindow</class>
- <widget class="QMainWindow" name="sksVision_MainWindow">
+ <class>on_Get_para</class>
+ <widget class="QMainWindow" name="on_Get_para">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -117,19 +117,6 @@
      <string>Linear density</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_vector">
-    <property name="geometry">
-     <rect>
-      <x>660</x>
-      <y>220</y>
-      <width>99</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Send Vector</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_avgVector">
     <property name="geometry">
      <rect>
@@ -208,17 +195,17 @@
      <string>Auto Threshold</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="Get_para">
+   <widget class="QPushButton" name="sendPara">
     <property name="geometry">
      <rect>
       <x>660</x>
-      <y>250</y>
+      <y>220</y>
       <width>99</width>
       <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Get_para</string>
+     <string>Send Para</string>
     </property>
    </widget>
   </widget>

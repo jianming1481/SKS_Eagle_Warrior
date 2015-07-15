@@ -37,6 +37,11 @@ public:
     virtual ~QSKS() {}
     void run();
     void ros_comms_init();
+    void sent_center(int auto_gray, int gray_sum, int linear){
+            nh->setParam("/SKS/vision/auto_gray",auto_gray);
+            nh->setParam("/SKS/vision/gray_sum",gray_sum);
+            nh->setParam("/SKS/vision/linearr",linear);
+    }
 
 Q_SIGNALS:
 
